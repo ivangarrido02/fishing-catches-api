@@ -72,27 +72,27 @@ public class CaptureServiceTest {
 			);
 		}
 
-		@Test
-		void getCaptureById_existingId_returnsCapture() {
+	@Test
+	void getCaptureById_existingId_returnsCapture() {
 
-		    // Arrange
-		    Capture capture = createCapture();
+		// Arrange
+		Capture capture = createCapture();
 
-		    CaptureResponseDTO response = createValidResponse();
+		CaptureResponseDTO response = createValidResponse();
 
-		    when(repository.findById(1L)).thenReturn(Optional.of(capture));
-		    when(mapper.toDTO(capture)).thenReturn(response);
+		when(repository.findById(1L)).thenReturn(Optional.of(capture));
+		when(mapper.toDTO(capture)).thenReturn(response);
 
-		    // Act
-		    CaptureResponseDTO result = service.getCaptureById(1L);
+		// Act
+		CaptureResponseDTO result = service.getCaptureById(1L);
 
-		    // Assert
-		    assertNotNull(result);
-		    assertEquals("Sargo", result.getName());
+		// Assert
+		assertNotNull(result);
+		assertEquals("Sargo", result.getName());
 
-		    verify(repository).findById(1L);
-		    verify(mapper).toDTO(capture);
-		}
+		verify(repository).findById(1L);
+		verify(mapper).toDTO(capture);
+	}
 
 	@Test
 	void getCaptureById_nonExistingId_throwsException() {
