@@ -1,6 +1,8 @@
 package com.ivandev.registrocapturas.service;
 
 
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -16,6 +18,7 @@ import com.ivandev.registrocapturas.mapper.CaptureMapper;
 import com.ivandev.registrocapturas.model.Capture;
 import com.ivandev.registrocapturas.repository.CaptureRepository;
 import com.ivandev.registrocapturas.specification.CaptureSpecification;
+import com.ivandev.registrocapturas.util.PatchLogger;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,11 +50,13 @@ public class CaptureService {
 	 */
 	@Transactional(readOnly = true)
 	public Page<CaptureResponseDTO> getAll(Pageable pageable, CaptureFilterDTO filter) {
-		
 		Specification<Capture> spec = CaptureSpecification.buildCaptureFilter(filter);
 		Page<Capture> captures = repository.findAll(spec, pageable);
-		return captures.map(capture -> mapper.toDTO(capture));
-
+		
+		log.debug("event=get_all_captures status=success totalRecords={}",
+				captures.getTotalElements());
+		
+		return captures.map(mapper::toDTO);
 	}
 
 	/**
@@ -62,8 +67,11 @@ public class CaptureService {
 	 */
 	@Transactional(readOnly = true)
 	public CaptureResponseDTO getCaptureById(Long id) {
-		log.debug("Recovering capture id = {} ", id);
 		Capture capture = getOrThrow(id);
+		
+		log.debug("event=recover_capture status=success captureId={}", 
+				id);
+		
 		return mapper.toDTO(capture);
 	}
 
@@ -78,6 +86,9 @@ public class CaptureService {
 		Capture capture = mapper.toEntity(dto);
 		Capture saved = repository.save(capture);
 		
+		log.info("event=create_capture status=success captureId={}", 
+				saved.getId());
+		
 		return mapper.toDTO(saved);
 	}
 
@@ -89,10 +100,9 @@ public class CaptureService {
 	@Transactional
 	public void deleteById(Long id) {
 		Capture capture = getOrThrow(id);
-		log.info("Deleting capture id = {}", 
-				id);
 		repository.delete(capture);
-		log.info("Capture id = {}, deleted successfully", 
+		
+		log.info("event=delete_capture status=success captureId={}", 
 				id);
 	}
 
@@ -105,13 +115,11 @@ public class CaptureService {
 	 */
 	@Transactional
 	public CaptureResponseDTO updateById(Long id, CaptureRequestDTO dto) {
-		log.info("Updating capture id = {}, with new values name = {}, quantity = {} and date = {}", id,
-				dto.getName(), dto.getQuantity(), dto.getDate());
-		
 		Capture capture = getOrThrow(id);
 		mapper.updateFromRequestDTO(dto, capture);
 
-		log.info("Capture updated successfully with id = {}", capture.getId());
+		log.info("event=update_capture status=success captureId={} name={} date={} quantity={}", 
+				capture.getId(), capture.getName(), capture.getDate(), capture.getQuantity());
 		
 		return mapper.toDTO(capture);
 	}
@@ -126,8 +134,13 @@ public class CaptureService {
 	 */
 	@Transactional
 	public CaptureResponseDTO partialUpdateById(Long id, CapturePatchDTO dto) {
+		Map<String, Object> updatedFields = PatchLogger.getNonNullFields(dto);
+		
 		Capture capture = getOrThrow(id);
 		mapper.updateFromPatchDTO(dto, capture);
+		
+		log.info("event=partial_update_capture status=success captureId={} updatedFields={}", 
+				id, updatedFields);
 		
 		return mapper.toDTO(capture);
 	}
