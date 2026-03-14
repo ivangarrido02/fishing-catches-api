@@ -70,6 +70,9 @@ public class ErrorHandler {
 	 */
 	@ExceptionHandler(AppException.class)
 	public ResponseEntity<ErrorResponse> handleAppException(AppException ex, HttpServletRequest request) {
+		log.warn("avent=app_exception status=failed path={} errorCode={} message={}",
+				request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+		
 		return buildErrorResponse(
 				ex.getStatus(), 
 				ex.getErrorCode(), 
@@ -100,6 +103,9 @@ public class ErrorHandler {
 						))
 				.toList();
 		
+		log.warn("event=invalid_arguments status=failed path={} errors={}",
+				request.getRequestURI(), errors);
+		
 		return buildErrorResponse(
 				HttpStatus.BAD_REQUEST,
 				ErrorCode.INVALID_INPUT,
@@ -119,6 +125,7 @@ public class ErrorHandler {
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex,
 			HttpServletRequest request) {
+		
 		List<FieldErrorDetail> errors = ex.getConstraintViolations()
 				.stream()
 				.map(violation -> new FieldErrorDetail(
@@ -128,14 +135,15 @@ public class ErrorHandler {
 						))
 				.toList();
 		
+		log.warn("event=constraint_violation status=failed path={} errors={}", 
+				request.getRequestURI(), errors);
+		
 		return buildErrorResponse(
 				HttpStatus.BAD_REQUEST,
 				ErrorCode.INVALID_INPUT,
 				"Validation failed",
 				request.getRequestURI(),
 				errors);
-				
-
 	}
 	
 	/**
@@ -147,7 +155,11 @@ public class ErrorHandler {
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleInternalException(Exception ex, HttpServletRequest request) {
-	    return buildErrorResponse(
+	    
+		log.error("event=internal_error status=failed, path={} message={}", 
+				request.getRequestURI(), ex.getMessage(), ex);
+		
+		return buildErrorResponse(
 	            HttpStatus.INTERNAL_SERVER_ERROR, 
 	            ErrorCode.INTERNAL_ERROR, 
 	            "Internal server error",
