@@ -88,6 +88,7 @@ public class CaptureController {
 	 * @throws CaptureNotFoundException if the capture does not exist.
 	 */
 	@DeleteMapping("/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteById(@PathVariable Long id) {
 		service.deleteById(id);
 	}
