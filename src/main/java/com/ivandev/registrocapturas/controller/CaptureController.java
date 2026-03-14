@@ -23,6 +23,7 @@ import com.ivandev.registrocapturas.exception.CaptureNotFoundException;
 import com.ivandev.registrocapturas.service.CaptureService;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 /** 
  * REST Controller responsible for managing fishing captures.
@@ -30,6 +31,7 @@ import jakarta.validation.Valid;
  * Provide endpoints to create, retrieve, update and delete captures.  
  */
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/captures")
 public class CaptureController {
@@ -51,7 +53,9 @@ public class CaptureController {
 	 */
 	@GetMapping
 	public Page<CaptureResponseDTO> getAll(Pageable pageable, CaptureFilterDTO filter) {
-		return service.getAll(pageable, filter);
+	    log.debug("event=get_all_captures status=received filter={} pageable={}",
+	    		filter, pageable);
+	    return service.getAll(pageable, filter);
 	}
 
 	/**
@@ -63,6 +67,8 @@ public class CaptureController {
 	 */
 	@GetMapping("/{id}")
 	public CaptureResponseDTO getCaptureById(@PathVariable Long id) {
+		log.debug("event=get_capture status=received captureId={}", 
+				id);
 		return service.getCaptureById(id);
 	}
 
@@ -78,6 +84,8 @@ public class CaptureController {
 	@PostMapping(consumes = "application/json")
 	@ResponseStatus(HttpStatus.CREATED)
 	public CaptureResponseDTO createCapture(@Valid @RequestBody CaptureRequestDTO dto) {
+		log.info("event=create_capture status=received name={} date={} quantity={}", 
+				dto.getName(), dto.getDate(), dto.getQuantity());
 		return service.createCapture(dto);
 	}
 
@@ -90,6 +98,8 @@ public class CaptureController {
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteById(@PathVariable Long id) {
+		log.info("event=delete_capture status=received captureId={}",
+				id);
 		service.deleteById(id);
 	}
 
@@ -104,6 +114,8 @@ public class CaptureController {
 	 */
 	@PutMapping("/{id}")
 	public CaptureResponseDTO updateById(@PathVariable Long id, @Valid @RequestBody CaptureRequestDTO dto) {
+		log.info("event=update_capture status=received captureId={}", 
+				id);
 		return service.updateById(id, dto);
 	}
 
@@ -118,7 +130,8 @@ public class CaptureController {
 	 */
 	@PatchMapping("/{id}")
 	public CaptureResponseDTO partialUpdateById(@PathVariable Long id, @Valid @RequestBody CapturePatchDTO dto) {
+		log.info("event=partial_update_capture status=received captureId={}",
+				id);
 		return service.partialUpdateById(id, dto);
-
 	}
 }
