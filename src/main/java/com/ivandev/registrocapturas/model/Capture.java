@@ -39,7 +39,7 @@ public class Capture {
 	@Column(nullable = false)
 	private Double weight;
 
-	/** Location where the capture was catch, cannot be null */
+	/** Location where the capture was caught, cannot be null */
 	@Column(nullable = false)
 	private String location;
 
